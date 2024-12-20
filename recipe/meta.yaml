@@ -10,9 +10,8 @@ source:
     sha256: 7227d57d637e67c1204e00e9e2aae6f4169a0df1e004c01f0e58172a354f3e9a
 
 build:
-  number: 0
+  number: 1
   noarch: python
-  script: {{ PYTHON }} -m pip install ./freva-rest -vv --no-deps --no-build-isolation
 
 
 requirements:
@@ -56,7 +55,6 @@ test:
   requires:
     - python {{ python_min }}
     - pip
-
 
 about:
   summary: Server for the Free Evaluation and Analysis Framework (Freva)
