@@ -18,7 +18,8 @@ create_mysql_unit(){
 #!/usr/bin/env sh
 set  -o nounset
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-
+mkdir -p $PREFIX/var/log/mysqld\
+    $PREFIX/var/mysqld
 temp_dir=\$(mktemp -d)
 
 cat    << EOI > \$temp_dir/init.sql
@@ -89,6 +90,9 @@ set  -o nounset
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+mkdir -p $PREFIX/var/log/mongodb\
+    $PREFIX/var/mongodb\
+    $PREFIX/var/$PKG_NAME/data/mongodb
 temp_dir=\$(mktemp -d)
 if [ -z "\$(cat $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml)" ];then
     cat <<EOI > $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml
@@ -225,12 +229,23 @@ EOF
     redis_unit=$(cat template.j2|sed \
     -e "s|{{DESCRIPTION}}|Redis server|g" \
     -e "s|{{AFTER}}|network.target|g" \
-    -e "s|{{EXEC_START_PRE}}||g" \
-    -e "s|{{EXEC_START}}|$PREFIX/libexec/$PKG_NAME/scripts/init-redis|g")
+    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-redis|g" \
+    -e "s|{{EXEC_START}}|$PREFIX/bin/redis-server /tmp/redis.conf|g")
     echo "$redis_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/redis.service" > /dev/null
 
 }
 
+create_redis_unit(){
+    mkdir -p $PREFIX/libexec/$PKG_NAME/scripts/
+    redis_init=$(cat freva-service-config/redis/redis-cmd.sh |grep -v redis-server|sed\
+    -e "s|REDIS_PASSWORD|API_REDIS_PASSWORD|g" \
+    -e "s|REDIS_USERNAME|API_REDIS_USERNAME|g" \
+    -e "s|REDIS_SSL_CERTFILE|API_REDIS_SSL_CERTFILE|g" \
+    -e "s|REDIS_SSL_KEYFILE|API_REDIS_SSL_KEYFILE|g" \
+    -e "s|REDIS_LOGLEVEL|API_REDIS_LOGLEVEL|g")
+    echo "$redis_init" | tee "$PREFIX/libexec/$PKG_NAME/scripts/init-redis" > /dev/null
+    chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-redis
+}
 
 setup_config() {
     # Setup additional configuration
@@ -242,12 +257,12 @@ setup_config() {
     mkdir -p $PREFIX/var/log/{mongodb,mysqld}
     mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
-    cp -r freva-service-config/redis/redis-cmd.sh $PREFIX/libexec/$PKG_NAME/scripts/init-redis
     cp -r freva-service-config/mongo/* $PREFIX/share/$PKG_NAME/mongodb/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
     create_mysql_unit
     create_solr_unit
     create_mongo_unit
+    create_redis_unit
     create_systemd_units
     echo -e '# Mysql Server Settings.\n#
 MYSQL_USER=
@@ -261,12 +276,14 @@ API_SOLR_CORE=files
 \n# Rest API settings
 API_PORT=7777
 API_SOLR_HOST=localhost:8983
-API_MONGO_HOST=localhost:27017
 API_OIDC_CLIENT_ID=
 API_OIDC_DISCOVERY_URL=
 API_REDIS_HOST=
+API_REDIS_PASSWORD=
+API_REDIS_USER=
 API_REDIS_SSL_CERTFILE=
 API_REDIS_SSL_KEYFILE=
+API_MONGO_HOST=localhost:27017
 API_MONGO_USER=
 API_MONGO_PASSWORD=
 API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
