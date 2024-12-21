@@ -257,7 +257,6 @@ setup_config() {
     mkdir -p $PREFIX/var/log/{mongodb,mysqld}
     mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
-    chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-redis
     cp -r freva-service-config/mongo/* $PREFIX/share/$PKG_NAME/mongodb/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
     create_mysql_unit
