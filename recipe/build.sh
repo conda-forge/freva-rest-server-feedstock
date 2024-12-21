@@ -236,6 +236,7 @@ EOF
 }
 
 create_redis_unit(){
+    mkdir -p $PREFIX/libexec/$PKG_NAME/scripts/
     redis_init=$(cat freva-service-config/redis/redis-cmd.sh |grep -v redis-server|sed\
     -e "s|REDIS_PASSWORD|API_REDIS_PASSWORD|g" \
     -e "s|REDIS_USERNAME|API_REDIS_USERNAME|g" \
