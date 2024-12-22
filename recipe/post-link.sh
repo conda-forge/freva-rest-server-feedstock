@@ -46,7 +46,7 @@ EOF
     -e "s|{{DESCRIPTION}}|MariaDB database server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mysqld |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld --bind-address=0.0.0.0|g")
     echo "$mysql_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mysqld.service" > /dev/null
 
     #APACHE SOLR
