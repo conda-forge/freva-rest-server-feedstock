@@ -224,7 +224,7 @@ EOF
     -e "s|{{DESCRIPTION}}|MongoDB server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mongo |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/mongod -f \$CONDA_PREFIX/share/$PKG_NAME/mongodb/mongod.conf |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/mongod -f \$CONDA_PREFIX/share/$PKG_NAME/mongodb/mongod.yaml |g")
     echo "$mongo_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mongo.service" > /dev/null
 
 
