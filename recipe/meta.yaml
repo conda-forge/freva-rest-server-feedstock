@@ -10,7 +10,7 @@ source:
     sha256: 7227d57d637e67c1204e00e9e2aae6f4169a0df1e004c01f0e58172a354f3e9a
 
 build:
-  number: 4
+  number: 5
   noarch: python
 
 
@@ -58,6 +58,26 @@ test:
 about:
   summary: Server for the Free Evaluation and Analysis Framework (Freva)
   home: https://github.com/FREVA-CLINT/freva-nextgen
+  description: |
+    Freva, the free evaluation system framework, is a data search and analysis
+    platform developed by the atmospheric science community for the atmospheric
+    science community. With help of Freva researchers can
+
+      * quickly and intuitively search for data stored at typical data centers that
+        host many datasets.
+      * create a common interface for user defined data analysis tools.
+      * apply data analysis tools in a reproducible manner.
+
+      The *freva-rest-server* defines endpoints that make up the freva server
+      services.
+
+      The server needs various systemd services to function properly, e.g apache-solr
+      mondoDB. Those systemd services are located unter
+      `$CONDA_PREFIX/share/systemd/<SERVICE>.service`. If you want to enable one
+      or multiple services you can copy the `*.service` files either to
+      `/etc/systemd/system` or `~/.local/share/systemd/user/`.
+
+
   license: BSD-3-Clause
   license_file: LICENSE
 
