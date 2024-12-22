@@ -293,6 +293,6 @@ API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
 }
 
 
-#install_server
+install_server
 setup_config
 exit_func 0
