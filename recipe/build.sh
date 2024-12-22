@@ -16,12 +16,13 @@ trap 'exit_func 1' SIGINT SIGTERM ERR
 create_mysql_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
 #!/usr/bin/env sh
-set  -o nounset
+set  -o nounset -o pipefail -o errexit
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 mkdir -p $PREFIX/var/log/mysqld\
     $PREFIX/var/mysqld
 temp_dir=\$(mktemp -d)
-
+USER=\$(whoami)
+trap '$PREFIX/bin/mysql.server stop' SIGINT SIGTERM ERR
 cat    << EOI > \$temp_dir/init.sql
 USE mysql;
 
@@ -49,12 +50,12 @@ EOI
 cat $PREFIX/share/$PKG_NAME/mysqld/create_tables.sql >> \$temp_dir/init.sql
 
 if [ ! -d $PREFIX/data ];then
-    $PREFIX/bin/mysqld --initialize-insecure
+    $PREFIX/bin/mysqld --initialize-insecure --user=\$USER
 fi
-$PREFIX/bin/mysqld --skip-grant-tables --skip-networking --init-file=\$temp_dir/init.sql &
+$PREFIX/bin/mysqld --user=\$USER --skip-grant-tables --skip-networking --init-file=\$temp_dir/init.sql &
 MYSQLD_PID=\$!
 sleep 5
-kill -9 \$MYSQLD_PID
+$PREFIX/bin/mysql.server stop
 rm -fr \$temp_dir
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
@@ -64,15 +65,16 @@ create_solr_unit(){
     # Init the apache solr
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 #!/usr/bin/env sh
-set  -o nounset
+set  -o nounset -o pipefail -o errexit
 SOLR_PORT=\${API_SOLR_PORT:-8983}
 SOLR_HEAP=\${API_SOLR_HEAP:-4g}
 SOLR_CORE=\${API_SOLR_CORE:-files}
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+trap "$PREFIX/bin/solr stop -p \$SOLR_PORT" SIGINT SIGTERM ERR
 
 for core in \$SOLR_CORE latest;do
     if [ ! -d "$PREFIX/libexec/apache-solr/server/solr/\$core" ];then
-        $PREFIX/bin/solr -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt
+        $PREFIX/bin/solr --force -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt
         $PREFIX/bin/solr create -c \$core --solr-url http://localhost:\$SOLR_PORT
         $PREFIX/bin/solr stop -p \$SOLR_PORT
     fi
@@ -86,10 +88,11 @@ chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 #!/usr/bin/env sh
-set  -o nounset
+set  -o nounset -o pipefail -o errexit
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+trap '$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml --shutdown' SIGINT SIGTERM ERR
 mkdir -p $PREFIX/var/log/mongodb\
     $PREFIX/var/mongodb\
     $PREFIX/var/$PKG_NAME/data/mongodb
@@ -204,7 +207,7 @@ EOF
     -e "s|{{DESCRIPTION}}|MariaDB database server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mysqld |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld --bind-address=0.0.0.0|g")
     echo "$mysql_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mysqld.service" > /dev/null
 
     #APACHE SOLR
@@ -239,7 +242,7 @@ create_redis_unit(){
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts/
     redis_init=$(cat freva-service-config/redis/redis-cmd.sh |grep -v redis-server|sed\
     -e "s|REDIS_PASSWORD|API_REDIS_PASSWORD|g" \
-    -e "s|REDIS_USERNAME|API_REDIS_USERNAME|g" \
+    -e "s|REDIS_USERNAME|API_REDIS_USER|g" \
     -e "s|REDIS_SSL_CERTFILE|API_REDIS_SSL_CERTFILE|g" \
     -e "s|REDIS_SSL_KEYFILE|API_REDIS_SSL_KEYFILE|g" \
     -e "s|REDIS_LOGLEVEL|API_REDIS_LOGLEVEL|g")
@@ -290,6 +293,6 @@ API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
 }
 
 
-install_server
+#install_server
 setup_config
 exit_func 0
