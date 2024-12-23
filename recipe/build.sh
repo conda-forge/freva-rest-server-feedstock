@@ -15,7 +15,7 @@ trap 'exit_func 1' SIGINT SIGTERM ERR
 
 create_mysql_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set  -o nounset -o pipefail -o errexit
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 mkdir -p $PREFIX/var/log/mysqld\
@@ -64,30 +64,35 @@ EOF
 create_solr_unit(){
     # Init the apache solr
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-solr
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set  -o nounset -o pipefail -o errexit
 SOLR_PORT=\${API_SOLR_PORT:-8983}
 SOLR_HEAP=\${API_SOLR_HEAP:-4g}
 SOLR_CORE=\${API_SOLR_CORE:-files}
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 trap "$PREFIX/bin/solr stop -p \$SOLR_PORT" SIGINT SIGTERM ERR
-
+configure_solr=false
 for core in \$SOLR_CORE latest;do
     if [ ! -d "$PREFIX/libexec/apache-solr/server/solr/\$core" ];then
+        configure_solr=true
+    fi
+    if \$configure_solr ;then
         $PREFIX/bin/solr --force -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt
         $PREFIX/bin/solr create -c \$core --solr-url http://localhost:\$SOLR_PORT
-        $PREFIX/bin/solr stop -p \$SOLR_PORT
+        cp $PREFIX/share/$PKG_NAME/solr/*.{txt,xml} $PREFIX/libexec/apache-solr/server/solr/\$core/conf
+        curl http://localhost:\$SOLR_PORT/solr/\$core/config -d '{"set-user-property": {"update.autoCreateFields":"false"}}'
     fi
-    cp $PREFIX/share/$PKG_NAME/solr/*.{txt,xml} $PREFIX/libexec/apache-solr/server/solr/\$core/conf
 done
-
+if \$configure_solr ;then
+    $PREFIX/bin/solr stop -p \$SOLR_PORT
+fi
 EOF
 chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 }
 
 create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set  -o nounset -o pipefail -o errexit
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
@@ -290,6 +295,7 @@ API_MONGO_HOST=localhost:27017
 API_MONGO_USER=
 API_MONGO_PASSWORD=
 API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
+chmod 600 $PREFIX/share/$PKG_NAME/config.ini
 }
 
 
