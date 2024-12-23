@@ -72,7 +72,7 @@ about:
       services. You can start all the rest-api using the `freva-rest-server`
       command.
 
-      ## Systemd services in production
+      ## Additional services in production
 
       The server needs various systemd services to function properly, e.g apache-solr
       mondoDB.
@@ -88,6 +88,12 @@ about:
         systemctl enable solr
         systemctl start sorl
       ```
+
+      ### Configuration
+
+      You can configure the rest api and the services by adjusting the variables
+      in the `$CONDA_PREFIX/share/freva-rest-server/config.ini` file.
+
 
   license: BSD-3-Clause
   license_file: LICENSE
