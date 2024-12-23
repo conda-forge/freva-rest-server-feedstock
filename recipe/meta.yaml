@@ -57,31 +57,44 @@ test:
     - pip
 
 about:
-about:
   summary: Server for the Free Evaluation and Analysis Framework (Freva)
   home: https://github.com/FREVA-CLINT/freva-nextgen
   description: |
-    Freva (Free Evaluation System Framework) is a comprehensive platform designed to support researchers, especially in the atmospheric and climate science communities, in managing, searching, and analyzing large-scale datasets. It bridges the gap between data centers and user-defined tools, promoting efficient, reproducible, and collaborative research workflows.
+    Freva (Free Evaluation System Framework) is a comprehensive platform
+    designed to support researchers, especially in the atmospheric and climate
+    science communities, in managing, searching, and analyzing large-scale
+    datasets. It bridges the gap between data centers and user-defined tools,
+    promoting efficient, reproducible, and collaborative research workflows.
 
     Intended Audience
     ------------------
 
     Freva is ideal for:
 
-    - **Researchers and Scientists**: Streamline the search and evaluation of datasets hosted at various data centers.
-    - **Data Analysts**: Integrate user-defined tools into a unified analysis framework.
-    - **System Administrators**: Deploy scalable, reliable services to support data-heavy research.
-    - **Research Institutions**: Enable reproducible data analysis workflows and foster collaboration among scientists.
+    - **Researchers and Scientists**: Streamline the search and evaluation of
+      datasets hosted at various data centers.
+    - **Data Analysts**: Integrate user-defined tools into a unified analysis
+      framework.
+    - **System Administrators**: Deploy scalable, reliable services to support
+      data-heavy research.
+    - **Research Institutions**: Enable reproducible data analysis workflows
+      and foster collaboration among scientists.
 
-    Whether you are analyzing climate model output, satellite observations, or observational data, Freva simplifies your workflow with its intuitive interface and robust backend services.
+    Whether you are analyzing climate model output, satellite observations, or
+    observational data, Freva simplifies your workflow with its intuitive
+    interface and robust backend services.
 
     Core Features
     -------------
 
-    - **Data Discovery**: Quickly and intuitively search large datasets across distributed data centers.
-    - **Tool Integration**: A unified interface to register, manage, and execute user-defined analysis tools.
-    - **Reproducibility**: Apply tools in a consistent and reproducible manner, with a focus on scientific rigor.
-    - **Extensibility**: Customize and expand the platform to meet the unique needs of your research team.
+    - **Data Discovery**: Quickly and intuitively search large datasets across
+      distributed data centers.
+    - **Tool Integration**: A unified interface to register, manage, and
+      execute user-defined analysis tools.
+    - **Reproducibility**: Apply tools in a consistent and reproducible manner,
+      with a focus on scientific rigor.
+    - **Extensibility**: Customize and expand the platform to meet the unique
+      needs of your research team.
 
     Setup
     -----
@@ -121,8 +134,10 @@ about:
          sudo systemctl enable solr
          sudo systemctl start solr
 
-       Modify the configuration file (`$CONDA_PREFIX/share/freva-rest-server/config.ini`)
-       to adjust the restAPI and service settings.
+       Modify the configuration file
+       (`$CONDA_PREFIX/share/freva-rest-server/config.ini`) to adjust the
+       restAPI and service settings.
+
        If you prefer to use systemd services at the **user level**
        (e.g., in `~/.local/share/systemd/user/`),
        ensure that **systemd lingering** is enabled for the user.
@@ -133,7 +148,8 @@ about:
 
          sudo loginctl enable-linger <USER-NAME>
 
-       This allows user-level services to continue running after the user logs out.
+       This allows user-level services to continue running after the user logs
+       out.
 
 
     4. **Running the Freva REST Server**
@@ -154,7 +170,8 @@ about:
 
     - Seamless access to multi-terabyte datasets stored at data centers.
     - A scalable, modular architecture that adapts to diverse research needs.
-    - An emphasis on fostering collaboration through reproducibility and interoperability.
+    - An emphasis on fostering collaboration through reproducibility and
+      interoperability.
 
   license: BSD-3-Clause
   license_file: LICENSE
