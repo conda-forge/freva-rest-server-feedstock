@@ -10,7 +10,7 @@ source:
     sha256: 7227d57d637e67c1204e00e9e2aae6f4169a0df1e004c01f0e58172a354f3e9a
 
 build:
-  number: 7
+  number: 8
   noarch: python
 
 
@@ -102,66 +102,60 @@ about:
     Setting up Freva involves deploying the necessary services and configuring
     them for your environment. Below is a high-level overview:
 
-    1. **Prerequisites**
+    Prerequisites
+    ~~~~~~~~~~~~~
 
        - A Linux-based system with administrative privileges.
        - Conda installed to manage dependencies.
        - Access to required systemd services like Apache Solr and MongoDB.
 
-    2. **Installation**
+    Installation
+    ~~~~~~~~~~~~
 
-       Install Freva using the Conda package manager:
+      1. Install Freva using the Conda package manager:
 
-       .. code-block:: console
+         `conda create -n freva-nextgen -c conda-forge freva-nextgen`
+         `conda activate freva-nextgen`
 
-         conda create -n freva-nextgen -c conda-forge freva-nextgen
-         conda activate freva-nextgen
 
-    3. **Configuring Services**
+      2. The system requires various background services. These can be found in:
 
-       The system requires various background services. These can be found in:
+        `$CONDA_PREFIX/share/systemd/<SERVICE>.service`
 
-       .. code-block:: console
 
-         $CONDA_PREFIX/share/systemd/<SERVICE>.service
+       3. Enable and start the services as follows:
 
-       Enable and start the services as follows:
+         `cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system`
+         `sudo systemctl daemon-reload`
+         `sudo systemctl enable solr`
+         `sudo systemctl start solr`
 
-       .. code-block:: console
 
-         cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system/
-         sudo systemctl daemon-reload
-         sudo systemctl enable solr
-         sudo systemctl start solr
+         Modify the configuration file
+         (`$CONDA_PREFIX/share/freva-rest-server/config.ini`) to adjust the
+         restAPI and service settings.
 
-       Modify the configuration file
-       (`$CONDA_PREFIX/share/freva-rest-server/config.ini`) to adjust the
-       restAPI and service settings.
+         If you prefer to use systemd services at the **user level**
+         (e.g., in `~/.local/share/systemd/user/`),
+         ensure that **systemd lingering** is enabled for the user.
 
-       If you prefer to use systemd services at the **user level**
-       (e.g., in `~/.local/share/systemd/user/`),
-       ensure that **systemd lingering** is enabled for the user.
+       4. You can enable lingering with the following command:
 
-       You can enable lingering with the following command:
-
-       .. code-block:: console
-
-         sudo loginctl enable-linger <USER-NAME>
+        `sudo loginctl enable-linger <USER-NAME>`
 
        This allows user-level services to continue running after the user logs
        out.
 
 
-    4. **Running the Freva REST Server**
+    Running the Freva REST Server
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-       Start the REST server using:
+      1.  Start the REST server using:
 
-       .. code-block:: console
+        `freva-rest-server`
 
-         freva-rest-server
-
-       This command launches the API endpoints that power Freva’s services,
-       enabling you to interact with data and tools seamlessly.
+        This command launches the API endpoints that power Freva’s services,
+        enabling you to interact with data and tools seamlessly.
 
     Why Choose Freva?
     -----------------
