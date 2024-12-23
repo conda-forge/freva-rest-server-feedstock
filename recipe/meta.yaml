@@ -69,14 +69,25 @@ about:
       * apply data analysis tools in a reproducible manner.
 
       The *freva-rest-server* defines endpoints that make up the freva server
-      services.
+      services. You can start all the rest-api using the `freva-rest-server`
+      command.
+
+      ## Systemd services in production
 
       The server needs various systemd services to function properly, e.g apache-solr
-      mondoDB. Those systemd services are located unter
+      mondoDB.
+
+      Those systemd services are located under
       `$CONDA_PREFIX/share/systemd/<SERVICE>.service`. If you want to enable one
       or multiple services you can copy the `*.service` files either to
-      `/etc/systemd/system` or `~/.local/share/systemd/user/`.
+      `/etc/systemd/system` or `~/.local/share/systemd/user/` for example
 
+      ```console
+        cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system/
+        systemctl daemon-reload
+        systemctl enable solr
+        systemctl start sorl
+      ```
 
   license: BSD-3-Clause
   license_file: LICENSE
