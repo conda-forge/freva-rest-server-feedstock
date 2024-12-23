@@ -112,7 +112,7 @@ about:
 
        Install Freva using the Conda package manager:
 
-       ::
+       .. code-block:: console
 
          conda create -n freva-nextgen -c conda-forge freva-nextgen
          conda activate freva-nextgen
@@ -121,13 +121,13 @@ about:
 
        The system requires various background services. These can be found in:
 
-       ::
+       .. code-block:: console
 
          $CONDA_PREFIX/share/systemd/<SERVICE>.service
 
        Enable and start the services as follows:
 
-       ::
+       .. code-block:: console
 
          cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system/
          sudo systemctl daemon-reload
@@ -144,7 +144,7 @@ about:
 
        You can enable lingering with the following command:
 
-       ::
+       .. code-block:: console
 
          sudo loginctl enable-linger <USER-NAME>
 
@@ -156,7 +156,7 @@ about:
 
        Start the REST server using:
 
-       ::
+       .. code-block:: console
 
          freva-rest-server
 
@@ -174,7 +174,21 @@ about:
       interoperability.
 
   license: BSD-3-Clause
+  license_family: BSD
   license_file: LICENSE
+  doc_url: https://freva-clint.github.io/freva-nextgen
+  dev_url: ttps://github.com/FREVA-CLINT/freva-nextgen
+  doc_source_url: https://github.com/FREVA-CLINT/freva-nextgen/blob/main/freva-rest/README.md
+  tags:
+    - data-analysis
+    - REST-API
+    - climate-research
+  keywords:
+    - freva
+    - REST-API
+    - data framework
+
+
 
 extra:
   recipe-maintainers:
