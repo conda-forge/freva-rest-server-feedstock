@@ -16,8 +16,8 @@ trap 'exit_func 1' SIGINT SIGTERM ERR
 create_mysql_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
 #!/usr/bin/env bash
-set  -o nounset -o pipefail -o errexit
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+set  -o nounset -o pipefail -o errexit
 mkdir -p $PREFIX/var/log/mysqld\
     $PREFIX/var/mysqld
 temp_dir=\$(mktemp -d)
@@ -211,7 +211,7 @@ EOF
     mysql_unit=$(cat template.j2|sed \
     -e "s|{{DESCRIPTION}}|MariaDB database server|g" \
     -e "s|{{AFTER}}|network.target|g" \
-    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mysqld |g" \
+    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mysql |g" \
     -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld --bind-address=0.0.0.0|g")
     echo "$mysql_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mysqld.service" > /dev/null
 
