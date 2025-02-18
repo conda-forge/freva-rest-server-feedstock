@@ -46,7 +46,7 @@ requirements:
     - tomli
     - typing_extensions
     - uvicorn
-    - zarr
+    - zarr <3
 
 test:
   imports:
