@@ -66,11 +66,11 @@ create_solr_unit(){
     # Init the apache solr
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 #!/usr/bin/env bash
+CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 set  -o nounset -o pipefail -o errexit
 SOLR_PORT=\${API_SOLR_PORT:-8983}
 SOLR_HEAP=\${API_SOLR_HEAP:-4g}
 SOLR_CORE=\${API_SOLR_CORE:-files}
-CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 trap "$PREFIX/bin/solr stop -p \$SOLR_PORT" SIGINT SIGTERM ERR
 configure_solr=false
 for core in \$SOLR_CORE latest;do
@@ -94,10 +94,10 @@ chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 #!/usr/bin/env bash
+CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 set  -o nounset -o pipefail -o errexit
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
-CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 trap '$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml --shutdown' SIGINT SIGTERM ERR
 mkdir -p $PREFIX/var/log/mongodb\
     $PREFIX/var/mongodb\
