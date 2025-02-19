@@ -25,6 +25,7 @@ requirements:
     - aiohttp
     - apache-solr
     - cloudpickle
+    - curl
     - email-validator
     - fastapi
     - fastapi-third-party-auth
