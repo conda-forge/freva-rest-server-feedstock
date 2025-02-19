@@ -56,7 +56,9 @@ $PREFIX/bin/mysqld --user=\$USER --skip-grant-tables --skip-networking --init-fi
 MYSQLD_PID=\$!
 sleep 5
 $PREFIX/bin/mysql.server stop
-kill \$MYSQLD_PID
+if [[ -n \$MYSQLD_PID ]];then
+    kill \$MYSQLD_PID &> /dev/null || true
+fi
 rm -fr \$temp_dir
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
