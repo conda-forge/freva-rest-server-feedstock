@@ -155,7 +155,8 @@ from pymongo import MongoClient
 from pymongo.errors import OperationFailure
 
 client = MongoClient("\$API_MONGO_HOST")
-db = client["\$API_MONGO_DB"]
+client["\$API_MONGO_DB"]
+db = client["admin"]
 try:
     db.command("dropUser", "\$API_MONGO_USER")
 except OperationFailure as e:
@@ -164,7 +165,7 @@ try:
     db.command(
         "createUser", "\$API_MONGO_USER",
         pwd="\$API_MONGO_PASSWORD",
-        roles=[{"role": "readWrite", "db": "\$API_MONGO_DB"}]
+        roles=["userAdminAnyDatabase","readWriteAnyDatabase" ],
     )
 except Exception as e:
     print('Failed to create user {}: {}'.format("\$API_MONGO_USER", e))
