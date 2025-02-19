@@ -56,7 +56,9 @@ $PREFIX/bin/mysqld --user=\$USER --skip-grant-tables --skip-networking --init-fi
 MYSQLD_PID=\$!
 sleep 5
 $PREFIX/bin/mysql.server stop
-kill \$MYSQLD_PID
+if [[ -n \$MYSQLD_PID ]];then
+    kill \$MYSQLD_PID &> /dev/null || true
+fi
 rm -fr \$temp_dir
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
@@ -68,17 +70,30 @@ create_solr_unit(){
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 set  -o nounset -o pipefail -o errexit
+temp_dir=\$(mktemp -d)
+trap 'rm -rf "\$temp_dir"' EXIT
 SOLR_PORT=\${API_SOLR_PORT:-8983}
 SOLR_HEAP=\${API_SOLR_HEAP:-4g}
 SOLR_CORE=\${API_SOLR_CORE:-files}
 trap "$PREFIX/bin/solr stop -p \$SOLR_PORT" SIGINT SIGTERM ERR
 configure_solr=false
+is_solr_running(){
+     curl -s "http://localhost:\$1/solr/admin/info/system"| grep -q "solr_home"
+}
 for core in \$SOLR_CORE latest;do
     if [ ! -d "$PREFIX/libexec/apache-solr/server/solr/\$core" ];then
         configure_solr=true
     fi
     if \$configure_solr ;then
-        $PREFIX/bin/solr --force -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt
+        if ! is_solr_running \$SOLR_PORT ;then
+            echo "Starting Solr on port \$SOLR_PORT ..."
+            $PREFIX/bin/solr --force -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt &> \$temp_dir/solr.log &
+            timeout 60 bash -c 'until curl -s http://localhost:'"\$SOLR_PORT"'/solr/admin/ping;do sleep 2; done' ||{
+                echo "Error: Solr did not start within 60 seconds." >&2
+                cat \$temp_dir/solr.log >&2
+            }
+        fi
+        echo "Creating core \$core ..."
         $PREFIX/bin/solr create -c \$core --solr-url http://localhost:\$SOLR_PORT
         cp $PREFIX/share/$PKG_NAME/solr/*.{txt,xml} $PREFIX/libexec/apache-solr/server/solr/\$core/conf
         curl http://localhost:\$SOLR_PORT/solr/\$core/config -d '{"set-user-property": {"update.autoCreateFields":"false"}}'
