@@ -9,6 +9,118 @@ Package license: BSD-3-Clause
 
 Summary: Server for the Free Evaluation and Analysis Framework (Freva)
 
+Development: ttps://github.com/FREVA-CLINT/freva-nextgen
+
+Documentation: https://freva-clint.github.io/freva-nextgen
+
+Freva (Free Evaluation System Framework) is a comprehensive platform
+designed to support researchers, especially in the atmospheric and climate
+science communities, in managing, searching, and analyzing large-scale
+datasets. It bridges the gap between data centers and user-defined tools,
+promoting efficient, reproducible, and collaborative research workflows.
+
+Intended Audience
+------------------
+
+Freva is ideal for:
+
+- **Researchers and Scientists**: Streamline the search and evaluation of
+  datasets hosted at various data centers.
+- **Data Analysts**: Integrate user-defined tools into a unified analysis
+  framework.
+- **System Administrators**: Deploy scalable, reliable services to support
+  data-heavy research.
+- **Research Institutions**: Enable reproducible data analysis workflows
+  and foster collaboration among scientists.
+
+Whether you are analyzing climate model output, satellite observations, or
+observational data, Freva simplifies your workflow with its intuitive
+interface and robust backend services.
+
+Core Features
+-------------
+
+- **Data Discovery**: Quickly and intuitively search large datasets across
+  distributed data centers.
+- **Tool Integration**: A unified interface to register, manage, and
+  execute user-defined analysis tools.
+- **Reproducibility**: Apply tools in a consistent and reproducible manner,
+  with a focus on scientific rigor.
+- **Extensibility**: Customize and expand the platform to meet the unique
+  needs of your research team.
+
+Setup
+-----
+
+Setting up Freva involves deploying the necessary services and configuring
+them for your environment. Below is a high-level overview:
+
+Prerequisites
+~~~~~~~~~~~~~
+
+   - A Linux-based system with administrative privileges.
+   - Conda installed to manage dependencies.
+   - Access to required systemd services like Apache Solr and MongoDB.
+
+Installation
+~~~~~~~~~~~~
+
+  1. Install Freva using the Conda package manager:
+
+     `conda create -n freva-nextgen -c conda-forge freva-nextgen`
+     `conda activate freva-nextgen`
+
+
+  2. The system requires various background services. These can be found in:
+
+    `$CONDA_PREFIX/share/systemd/<SERVICE>.service`
+
+
+   3. Enable and start the services as follows:
+
+     `cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system`
+     `sudo systemctl daemon-reload`
+     `sudo systemctl enable solr`
+     `sudo systemctl start solr`
+
+
+     Modify the configuration file
+     (`$CONDA_PREFIX/share/freva-rest-server/config.ini`) to adjust the
+     restAPI and service settings.
+
+     If you prefer to use systemd services at the **user level**
+     (e.g., in `~/.local/share/systemd/user/`),
+     ensure that **systemd lingering** is enabled for the user.
+
+   4. You can enable lingering with the following command:
+
+    `sudo loginctl enable-linger <USER-NAME>`
+
+   This allows user-level services to continue running after the user logs
+   out.
+
+
+Running the Freva REST Server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  1.  Start the REST server using:
+
+    `freva-rest-server`
+
+    This command launches the API endpoints that power Freva’s services,
+    enabling you to interact with data and tools seamlessly.
+
+Why Choose Freva?
+-----------------
+
+Freva is designed for:
+
+- Seamless access to multi-terabyte datasets stored at data centers.
+- A scalable, modular architecture that adapts to diverse research needs.
+- An emphasis on fostering collaboration through reproducibility and
+  interoperability.
+
+
 Current build status
 ====================
 

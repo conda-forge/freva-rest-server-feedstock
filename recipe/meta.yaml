@@ -1,5 +1,5 @@
 {% set name = "freva-rest-server" %}
-{% set version = "2411.0.0" %}
+{% set version = "2502.0.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,10 +7,10 @@ package:
 
 source:
   - url: https://github.com/FREVA-CLINT/freva-nextgen/archive/refs/tags/v{{ version }}.tar.gz
-    sha256: 7227d57d637e67c1204e00e9e2aae6f4169a0df1e004c01f0e58172a354f3e9a
+    sha256: e9cf4351b8753571843e6f1ea99121989259cad9e9315ff82e3f69c1af881f84
 
 build:
-  number: 11
+  number: 0
   noarch: python
 
 
@@ -19,6 +19,7 @@ requirements:
     - python {{ python_min }}
     - setuptools
     - pip
+    - flit
 
   run:
     - python >={{ python_min }}
@@ -57,6 +58,7 @@ test:
   requires:
     - python {{ python_min }}
     - pip
+    - flit
 
 about:
   summary: Server for the Free Evaluation and Analysis Framework (Freva)
@@ -183,7 +185,6 @@ about:
     - freva
     - REST-API
     - data framework
-
 
 
 extra:
