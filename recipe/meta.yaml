@@ -1,5 +1,6 @@
 {% set name = "freva-rest-server" %}
 {% set version = "2502.0.0" %}
+{% set python_min = "3.9" %} 
 
 package:
   name: {{ name|lower }}
@@ -49,6 +50,7 @@ requirements:
     - typing_extensions
     - uvicorn
     - zarr <3
+    - opensearch
 
 test:
   imports:
