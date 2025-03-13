@@ -190,12 +190,16 @@ CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 set -o nounset -o pipefail -o errexit
 
 # Set OpenSearch environment variables
-OPENSEARCH_HOME=\${OPENSEARCH_HOME:-$PREFIX/share/$PKG_NAME/opensearch}
-OPENSEARCH_DATA_DIR=\$OPENSEARCH_HOME/data
-OPENSEARCH_LOGS_DIR=\$OPENSEARCH_HOME/log
-OPENSEARCH_CONF_DIR=\$OPENSEARCH_HOME/config
-PATH="$PREFIX/share/opensearch/bin:$PATH"
+OPENSEARCH_HOME=\${OPENSEARCH_HOME:-$PREFIX/libexec/opensearch/}
+OPENSEARCH_PATH_CONF=\$OPENSEARCH_HOME/config
+PATH="$PREFIX/libexec/opensearch/bin:$PATH"
 
+# Install plugin security to be able to disable SSL
+mkdir -p "${PREFIX}/libexec/opensearch/plugins"
+${PREFIX}/libexec/opensearch/bin/opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
+
+mkdir -p \$OPENSEARCH_PATH_CONF
+cp $PREFIX/share/$PKG_NAME/opensearch/opensearch.yml \$OPENSEARCH_PATH_CONF
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
 }
@@ -283,7 +287,7 @@ EOF
     -e "s|{{DESCRIPTION}}|OpenSearch server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-opensearch |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch --quiet |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch |g")
     echo "$opensearch_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/opensearch.service" > /dev/null
 
 }
@@ -305,15 +309,14 @@ setup_config() {
     cd $TEMP_DIR
     git clone --recursive https://github.com/FREVA-CLINT/freva-service-config.git
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts
-    mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb}
-    mkdir -p $PREFIX/share/$PKG_NAME/opensearch/{data,log,config}
+    mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb,opensearch}
     mkdir -p $PREFIX/var/{mongodb,mysqld}
     mkdir -p $PREFIX/var/log/{mongodb,mysqld}
     mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
     cp -r freva-service-config/mongo/* $PREFIX/share/$PKG_NAME/mongodb/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
-    cp freva-service-config/opensearch/opensearch.yml $PREFIX/share/$PKG_NAME/opensearch/config
+    cp -r freva-service-config/opensearch $PREFIX/share/$PKG_NAME/
     create_mysql_unit
     create_solr_unit
     create_mongo_unit
