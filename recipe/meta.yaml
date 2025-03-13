@@ -1,5 +1,6 @@
 {% set name = "freva-rest-server" %}
 {% set version = "2502.0.0" %}
+{% set python_min = "3.9" %} 
 
 package:
   name: {{ name|lower }}
@@ -10,7 +11,7 @@ source:
     sha256: e9cf4351b8753571843e6f1ea99121989259cad9e9315ff82e3f69c1af881f84
 
 build:
-  number: 0
+  number: 5
   noarch: python
 
 
@@ -49,6 +50,7 @@ requirements:
     - typing_extensions
     - uvicorn
     - zarr <3
+    - opensearch
 
 test:
   imports:
@@ -129,7 +131,7 @@ about:
 
        3. Enable and start the services as follows:
 
-         `cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system`
+         `cp $CONDA_PREFIX/share/freva-rest-server/systemd/solr.service /etc/systemd/system`
          `sudo systemctl daemon-reload`
          `sudo systemctl enable solr`
          `sudo systemctl start solr`
@@ -190,3 +192,4 @@ about:
 extra:
   recipe-maintainers:
     - antarcticrainforest
+    - mo-dkrz

@@ -181,6 +181,26 @@ chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 touch $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml
 }
 
+
+create_opensearch_unit() {
+    # Create the OpenSearch initialization script
+    cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
+#!/usr/bin/env bash
+CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+set -o nounset -o pipefail -o errexit
+
+# Set OpenSearch environment variables
+OPENSEARCH_HOME=\${OPENSEARCH_HOME:-$PREFIX/share/$PKG_NAME/opensearch}
+OPENSEARCH_DATA_DIR=\$OPENSEARCH_HOME/data
+OPENSEARCH_LOGS_DIR=\$OPENSEARCH_HOME/log
+OPENSEARCH_CONF_DIR=\$OPENSEARCH_HOME/config
+PATH="$PREFIX/share/opensearch/bin:$PATH"
+
+EOF
+    chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
+}
+
+
 install_server(){
     # Install the rest server
     #
@@ -258,6 +278,14 @@ EOF
     -e "s|{{EXEC_START}}|$PREFIX/bin/redis-server /tmp/redis.conf|g")
     echo "$redis_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/redis.service" > /dev/null
 
+    #OPENSEARCH - STACAPI
+    opensearch_unit=$(cat template.j2|sed \
+    -e "s|{{DESCRIPTION}}|OpenSearch server|g" \
+    -e "s|{{AFTER}}|network.target|g" \
+    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-opensearch |g" \
+    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch --quiet |g")
+    echo "$opensearch_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/opensearch.service" > /dev/null
+
 }
 
 create_redis_unit(){
@@ -278,16 +306,19 @@ setup_config() {
     git clone --recursive https://github.com/FREVA-CLINT/freva-service-config.git
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts
     mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb}
+    mkdir -p $PREFIX/share/$PKG_NAME/opensearch/{data,log,config}
     mkdir -p $PREFIX/var/{mongodb,mysqld}
     mkdir -p $PREFIX/var/log/{mongodb,mysqld}
     mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
     cp -r freva-service-config/mongo/* $PREFIX/share/$PKG_NAME/mongodb/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
+    cp freva-service-config/opensearch/opensearch.yml $PREFIX/share/$PKG_NAME/opensearch/config
     create_mysql_unit
     create_solr_unit
     create_mongo_unit
     create_redis_unit
+    create_opensearch_unit
     create_systemd_units
     echo -e '# Mysql Server Settings.\n#
 MYSQL_USER=
