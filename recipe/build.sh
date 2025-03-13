@@ -196,13 +196,6 @@ OPENSEARCH_LOGS_DIR=\$OPENSEARCH_HOME/log
 OPENSEARCH_CONF_DIR=\$OPENSEARCH_HOME/config
 PATH="$PREFIX/share/opensearch/bin:$PATH"
 
-if [ "\$(id -u)" = "0" ]; then
-    echo "Creating opensearch user for proper permissions"
-    groupadd -g 1000 opensearch 2>/dev/null || true
-    useradd -u 1000 -g opensearch -s /bin/bash -m opensearch 2>/dev/null || true
-    chown -R opensearch:opensearch \$OPENSEARCH_DATA_DIR \$OPENSEARCH_LOGS_DIR \$OPENSEARCH_CONF_DIR
-fi
-
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
 }
