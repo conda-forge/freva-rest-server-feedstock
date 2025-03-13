@@ -190,7 +190,7 @@ CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 set -o nounset -o pipefail -o errexit
 
 # Set OpenSearch environment variables
-OPENSEARCH_HOME=\${OPENSEARCH_HOME:-\$PREFIX/share/\$PKG_NAME/opensearch}
+OPENSEARCH_HOME=\${OPENSEARCH_HOME:-$PREFIX/share/$PKG_NAME/opensearch}
 OPENSEARCH_DATA_DIR=\$OPENSEARCH_HOME/data
 OPENSEARCH_LOGS_DIR=\$OPENSEARCH_HOME/log
 OPENSEARCH_CONF_DIR=\$OPENSEARCH_HOME/config
