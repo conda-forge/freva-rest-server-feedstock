@@ -195,7 +195,7 @@ OPENSEARCH_PATH_CONF=\$OPENSEARCH_HOME/config
 PATH="$PREFIX/libexec/opensearch/bin:$PATH"
 
 # Install plugin security to be able to disable SSL
-mkdir -p "${PREFIX}/libexec/opensearch/plugins"
+mkdir -p "\$OPENSEARCH_HOME/plugins"
 ${PREFIX}/libexec/opensearch/bin/opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
 
 mkdir -p \$OPENSEARCH_PATH_CONF
@@ -309,7 +309,7 @@ setup_config() {
     cd $TEMP_DIR
     git clone --recursive https://github.com/FREVA-CLINT/freva-service-config.git
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts
-    mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb,opensearch}
+    mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb}
     mkdir -p $PREFIX/var/{mongodb,mysqld}
     mkdir -p $PREFIX/var/log/{mongodb,mysqld}
     mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
