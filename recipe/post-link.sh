@@ -79,7 +79,7 @@ EOF
     -e "s|{{DESCRIPTION}}|OpenSearch server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-opensearch |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch --quiet |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch |g")
     echo "$opensearch_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/opensearch.service" > /dev/null
 
 rm -r $TEMP_DIR

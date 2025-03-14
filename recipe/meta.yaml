@@ -1,6 +1,5 @@
 {% set name = "freva-rest-server" %}
 {% set version = "2502.0.0" %}
-{% set python_min = "3.9" %} 
 
 package:
   name: {{ name|lower }}
@@ -11,7 +10,7 @@ source:
     sha256: e9cf4351b8753571843e6f1ea99121989259cad9e9315ff82e3f69c1af881f84
 
 build:
-  number: 5
+  number: 0
   noarch: python
 
 
