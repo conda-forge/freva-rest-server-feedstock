@@ -17,9 +17,11 @@ create_mysql_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/mysqldb
+LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
+
 set  -o nounset -o pipefail -o errexit
-mkdir -p $PREFIX/var/log/mysqld\
-    $PREFIX/var/mysqld
+mkdir -p \$LOG_DIR \$DATA_DIR
 temp_dir=\$(mktemp -d)
 USER=\$(whoami)
 trap '$PREFIX/bin/mysql.server stop' SIGINT SIGTERM ERR
@@ -49,10 +51,10 @@ USE \\\`\$MYSQL_DATABASE\\\`;
 EOI
 cat $PREFIX/share/$PKG_NAME/mysqld/create_tables.sql >> \$temp_dir/init.sql
 
-if [ ! -d $PREFIX/data ];then
-    $PREFIX/bin/mysqld --initialize-insecure --user=\$USER
+if [ ! -d \$DATA_DIR/mysql ];then
+    $PREFIX/bin/mysqld --no-defaults --datadir=\$DATA_DIR --initialize-insecure --user=\$USER
 fi
-$PREFIX/bin/mysqld --user=\$USER --skip-grant-tables --skip-networking --init-file=\$temp_dir/init.sql &
+$PREFIX/bin/mysqld --no-defaults --datadir=\$DATA_DIR --user=\$USER --skip-grant-tables --skip-networking --init-file=\$temp_dir/init.sql &
 MYSQLD_PID=\$!
 sleep 5
 $PREFIX/bin/mysql.server stop
@@ -69,9 +71,11 @@ create_solr_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/solr
 set  -o nounset -o pipefail -o errexit
 temp_dir=\$(mktemp -d)
 trap 'rm -rf "\$temp_dir"' EXIT
+mkdir -p \${DATA_DIR}
 SOLR_PORT=\${API_SOLR_PORT:-8983}
 SOLR_HEAP=\${API_SOLR_HEAP:-4g}
 SOLR_CORE=\${API_SOLR_CORE:-files}
@@ -81,21 +85,23 @@ is_solr_running(){
      curl -s "http://localhost:\$1/solr/admin/info/system"| grep -q "solr_home"
 }
 for core in \$SOLR_CORE latest;do
-    if [ ! -d "$PREFIX/libexec/apache-solr/server/solr/\$core" ];then
+    if [ ! -f "\$DATA_DIR/data/\$core/core.properties" ];then
         configure_solr=true
     fi
     if \$configure_solr ;then
         if ! is_solr_running \$SOLR_PORT ;then
             echo "Starting Solr on port \$SOLR_PORT ..."
-            $PREFIX/bin/solr --force -m \$SOLR_HEAP -p \$SOLR_PORT -q --no-prompt &> \$temp_dir/solr.log &
-            timeout 60 bash -c 'until curl -s http://localhost:'"\$SOLR_PORT"'/solr/admin/ping;do sleep 2; done' ||{
+            $PREFIX/bin/solr start \
+                --force -m \$SOLR_HEAP -s \${DATA_DIR} \
+                -p \$SOLR_PORT -q --no-prompt &> \$temp_dir/solr.log &
+            timeout 20 bash -c 'until curl -s http://localhost:'"\$SOLR_PORT"'/solr/admin/ping;do sleep 2; done' ||{
                 echo "Error: Solr did not start within 60 seconds." >&2
                 cat \$temp_dir/solr.log >&2
             }
         fi
         echo "Creating core \$core ..."
         $PREFIX/bin/solr create -c \$core --solr-url http://localhost:\$SOLR_PORT
-        cp $PREFIX/share/$PKG_NAME/solr/*.{txt,xml} $PREFIX/libexec/apache-solr/server/solr/\$core/conf
+        cp $PREFIX/share/$PKG_NAME/solr/*.{txt,xml} \$DATA_DIR/\$core/conf
         curl http://localhost:\$SOLR_PORT/solr/\$core/config -d '{"set-user-property": {"update.autoCreateFields":"false"}}'
     fi
 done
@@ -110,21 +116,21 @@ create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/mongodb
+LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
+CONFIG_DIR=$PREFIX/share/$PKG_NAME/mongodb
 set  -o nounset -o pipefail -o errexit
+mkdir -p \$LOG_DIR \$DATA_DIR \$CONFIG_DIR
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
-trap '$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml --shutdown' SIGINT SIGTERM ERR
-mkdir -p $PREFIX/var/log/mongodb\
-    $PREFIX/var/mongodb\
-    $PREFIX/var/$PKG_NAME/data/mongodb
+trap '$PREFIX/bin/mongod -f \$CONFIG_DIR --shutdown' SIGINT SIGTERM ERR
 temp_dir=\$(mktemp -d)
-if [ -z "\$(cat $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml)" ];then
-    cat <<EOI > $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml
+cat <<EOI > \$CONFIG_DIR/mongod.yaml
 # MongoDB Configuration File
 
 # Where to store data.
 storage:
-  dbPath: $PREFIX/var/$PKG_NAME/data/mongodb
+  dbPath: \$DATA_DIR
   journal:
     enabled: true
 # Network interfaces.
@@ -139,15 +145,14 @@ security:
 # Process management.
 processManagement:
   fork: true  # Run the MongoDB server as a daemon.
-  pidFilePath: $PREFIX/var/mongodb/mongod.pid  # Location of the process ID file.
+  pidFilePath: \$CONFIG_DIR/mongod.pid  # Location of the process ID file.
 
 # Logging.
 systemLog:
   destination: file
   logAppend: true
-  path: $PREFIX/var/log/mongodb/mongod.log
+  path: \$LOG_DIR/mongod.log
 EOI
-fi
 
 cat    << EOI > \$temp_dir/init_mongo.py
 import os
@@ -171,14 +176,13 @@ except Exception as e:
     print('Failed to create user {}: {}'.format("\$API_MONGO_USER", e))
     raise
 EOI
-$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml --noauth --fork
+$PREFIX/bin/mongod -f \$CONFIG_DIR/mongod.yaml --noauth --fork
 sleep 5
 $PREFIX/bin/python \$temp_dir/init_mongo.py
-$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml --shutdown
+$PREFIX/bin/mongod -f \$CONFIG_DIR/mongod.yaml --shutdown &
 rm -fr \$temp_dir
 EOF
 chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
-touch $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml
 }
 
 
@@ -187,19 +191,26 @@ create_opensearch_unit() {
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/opensearch
+LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
+export OPENSEARCH_HOME=$PREFIX/libexec/opensearch
+export JAVA_HOME=$PREFIX
 set -o nounset -o pipefail -o errexit
 
 # Set OpenSearch environment variables
-OPENSEARCH_HOME=\${OPENSEARCH_HOME:-$PREFIX/libexec/opensearch/}
-OPENSEARCH_PATH_CONF=\$OPENSEARCH_HOME/config
-PATH="$PREFIX/libexec/opensearch/bin:$PATH"
+export OPENSEARCH_PATH_CONF=\$OPENSEARCH_HOME/config
+PATH="$PREFIX/libexec/opensearch/bin:\$PATH"
 
 # Install plugin security to be able to disable SSL
-mkdir -p "\$OPENSEARCH_HOME/plugins"
-${PREFIX}/libexec/opensearch/bin/opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
-
-mkdir -p \$OPENSEARCH_PATH_CONF
+if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-security" ];then
+    mkdir -p \$OPENSEARCH_HOME/{plugins,config,config}
+    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
+fi
+mkdir -p \$DATA_DIR \$LOG_DIR
 cp $PREFIX/share/$PKG_NAME/opensearch/opensearch.yml \$OPENSEARCH_PATH_CONF
+echo -e '\n## Persistent data and log location' >> \$OPENSEARCH_PATH_CONF/opensearch.yml
+echo path.data: \$DATA_DIR >> \$OPENSEARCH_PATH_CONF/opensearch.yml
+echo path.logs: \$LOG_DIR/opensearch.log >> \$OPENSEARCH_PATH_CONF/opensearch.yml
 EOF
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
 }
@@ -253,7 +264,7 @@ EOF
     -e "s|{{DESCRIPTION}}|MariaDB database server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mysql |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld --bind-address=0.0.0.0|g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/mysqld --no-defaults --datadir=\$API_DATA_DIR/mysqldb --bind-address=0.0.0.0|g")
     echo "$mysql_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mysqld.service" > /dev/null
 
     #APACHE SOLR
@@ -261,7 +272,7 @@ EOF
     -e "s|{{DESCRIPTION}}|Apache solr server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-solr |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/solr -f --force |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/solr start -s \$API_DATA_DIR/solr -f --force |g")
     echo "$solr_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/solr.service" > /dev/null
 
 
@@ -270,7 +281,7 @@ EOF
     -e "s|{{DESCRIPTION}}|MongoDB server|g" \
     -e "s|{{AFTER}}|network.target|g" \
     -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-mongo |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/mongod -f \$CONDA_PREFIX/share/$PKG_NAME/mongodb/mongod.yaml |g")
+    -e "s|{{EXEC_START}}|$PREFIX/bin/mongod -f $PREFIX/share/$PKG_NAME/mongodb/mongod.yaml |g")
     echo "$mongo_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/mongo.service" > /dev/null
 
 
@@ -294,13 +305,18 @@ EOF
 
 create_redis_unit(){
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts/
-    redis_init=$(cat freva-service-config/redis/redis-cmd.sh |grep -v redis-server|sed\
+    redis_init=$(cat freva-service-config/redis/redis-cmd.sh |grep -v redis-server|grep -v 'cat /tmp/redis.conf'|sed\
     -e "s|REDIS_PASSWORD|API_REDIS_PASSWORD|g" \
     -e "s|REDIS_USERNAME|API_REDIS_USER|g" \
     -e "s|REDIS_SSL_CERTFILE|API_REDIS_SSL_CERTFILE|g" \
     -e "s|REDIS_SSL_KEYFILE|API_REDIS_SSL_KEYFILE|g" \
     -e "s|REDIS_LOGLEVEL|API_REDIS_LOGLEVEL|g")
     echo "$redis_init" | tee "$PREFIX/libexec/$PKG_NAME/scripts/init-redis" > /dev/null
+    echo "mkdir -p  \${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/redis" >> $PREFIX/libexec/$PKG_NAME/scripts/init-redis
+    echo "mkdir -p  \${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}" >> $PREFIX/libexec/$PKG_NAME/scripts/init-redis
+    echo "echo dir \${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/redis >> /tmp/redis.conf" >> $PREFIX/libexec/$PKG_NAME/scripts/init-redis
+    echo "echo logfile \${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}/redis.log >> /tmp/redis.conf" >> $PREFIX/libexec/$PKG_NAME/scripts/init-redis
+    echo "cat /tmp/redis.conf" >> $PREFIX/libexec/$PKG_NAME/scripts/init-redis
     chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-redis
 }
 
@@ -310,11 +326,9 @@ setup_config() {
     git clone --recursive https://github.com/FREVA-CLINT/freva-service-config.git
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts
     mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb}
-    mkdir -p $PREFIX/var/{mongodb,mysqld}
-    mkdir -p $PREFIX/var/log/{mongodb,mysqld}
-    mkdir -p $PREFIX/var/$PKG_NAME/data/{mongodb,mysqld}
+    mkdir -p $PREFIX/var/log/$PKG_NAME
+    mkdir -p $PREFIX/var/$PKG_NAME/{mongodb,mysqld,solr,redis,opensearch}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
-    cp -r freva-service-config/mongo/* $PREFIX/share/$PKG_NAME/mongodb/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
     cp -r freva-service-config/opensearch $PREFIX/share/$PKG_NAME/
     create_mysql_unit
@@ -345,7 +359,11 @@ API_REDIS_SSL_KEYFILE=
 API_MONGO_HOST=localhost:27017
 API_MONGO_USER=
 API_MONGO_PASSWORD=
-API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
+API_MONGO_DB=search_stats
+\n#Opensearch settings' > $PREFIX/share/$PKG_NAME/config.ini
+echo "JAVA_HOME=$PREFIX" >> $PREFIX/share/$PKG_NAME/config.ini
+echo "OPENSEARCH_HOME=$PREFIX/libexec/opensearch" >> $PREFIX/share/$PKG_NAME/config.ini
+echo "OPENSEARCH_PATH_CONF=$PREFIX/libexec/opensearch/config" >> $PREFIX/share/$PKG_NAME/config.ini
 chmod 600 $PREFIX/share/$PKG_NAME/config.ini
 }
 
