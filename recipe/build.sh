@@ -203,7 +203,7 @@ PATH="$PREFIX/libexec/opensearch/bin:\$PATH"
 
 # Install plugin security to be able to disable SSL
 if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-security" ];then
-    mkdir -p \$OPENSEARCH_HOME/{plugins,config,config}
+    mkdir -p \$OPENSEARCH_HOME/{plugins,config}
     opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
 fi
 mkdir -p \$DATA_DIR \$LOG_DIR
