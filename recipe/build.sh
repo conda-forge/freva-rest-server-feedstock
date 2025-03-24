@@ -206,6 +206,15 @@ if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-security" ];then
     mkdir -p \$OPENSEARCH_HOME/{plugins,config}
     opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
 fi
+# Installing OpenSearch job scheduler plugin (dependency of ISM)
+if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-job-scheduler" ];then
+    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-job-scheduler/2.19.1.0/opensearch-job-scheduler-2.19.1.0.zip
+fi
+# Install OpenSearch Index Management plugin
+if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-index-management" ];then
+    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-index-management/2.19.1.0/opensearch-index-management-2.19.1.0.zip
+fi
+
 mkdir -p \$DATA_DIR \$LOG_DIR
 cp $PREFIX/share/$PKG_NAME/opensearch/opensearch.yml \$OPENSEARCH_PATH_CONF
 echo -e '\n## Persistent data and log location' >> \$OPENSEARCH_PATH_CONF/opensearch.yml
