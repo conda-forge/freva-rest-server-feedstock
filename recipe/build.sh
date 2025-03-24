@@ -17,7 +17,7 @@ create_mysql_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mysql
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/mysqldb
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/mysqldb}
 LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
 
 set  -o nounset -o pipefail -o errexit
@@ -71,7 +71,7 @@ create_solr_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-solr
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/solr
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/solr}
 set  -o nounset -o pipefail -o errexit
 temp_dir=\$(mktemp -d)
 trap 'rm -rf "\$temp_dir"' EXIT
@@ -116,7 +116,7 @@ create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/mongodb
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/monogodb}
 LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
 CONFIG_DIR=$PREFIX/share/$PKG_NAME/mongodb
 set  -o nounset -o pipefail -o errexit
@@ -191,7 +191,7 @@ create_opensearch_unit() {
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME}/opensearch
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/opensearch}
 LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
 export OPENSEARCH_HOME=$PREFIX/libexec/opensearch
 export JAVA_HOME=$PREFIX
