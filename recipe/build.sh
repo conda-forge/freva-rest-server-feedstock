@@ -85,7 +85,7 @@ is_solr_running(){
      curl -s "http://localhost:\$1/solr/admin/info/system"| grep -q "solr_home"
 }
 for core in \$SOLR_CORE latest;do
-    if [ ! -f "\$DATA_DIR/data/\$core/core.properties" ];then
+    if [ ! -f "\$DATA_DIR/\$core/core.properties" ];then
         configure_solr=true
     fi
     if \$configure_solr ;then
