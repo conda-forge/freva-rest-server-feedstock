@@ -123,7 +123,7 @@ set  -o nounset -o pipefail -o errexit
 mkdir -p \$LOG_DIR \$DATA_DIR \$CONFIG_DIR
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
 API_MONGO_DB=\${API_MONGO_DB:-search_stats}
-trap '$PREFIX/bin/mongod -f \$CONFIG_DIR --shutdown' SIGINT SIGTERM ERR
+trap '$PREFIX/bin/mongod -f \$CONFIG_DIR/mongod.yaml --shutdown' SIGINT SIGTERM ERR
 temp_dir=\$(mktemp -d)
 cat <<EOI > \$CONFIG_DIR/mongod.yaml
 # MongoDB Configuration File
