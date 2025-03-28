@@ -116,9 +116,9 @@ create_mongo_unit(){
     cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 #!/usr/bin/env bash
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/monogodb}
+DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/monogdb}
 LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
-CONFIG_DIR=\${API_CONFIG_DIR:-$PREFIX/share/$PKG_NAME/monogodb}
+CONFIG_DIR=\${API_CONFIG_DIR:-$PREFIX/share/$PKG_NAME/monogdb}
 set  -o nounset -o pipefail -o errexit
 mkdir -p \$LOG_DIR \$DATA_DIR \$CONFIG_DIR
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
