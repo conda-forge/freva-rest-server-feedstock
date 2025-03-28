@@ -93,7 +93,7 @@ for core in \$SOLR_CORE latest;do
             echo "Starting Solr on port \$SOLR_PORT ..."
             $PREFIX/bin/solr start \
                 --force -m \$SOLR_HEAP -s \${DATA_DIR} \
-                -p \$SOLR_PORT -q --no-prompt &> \$temp_dir/solr.log &
+                -p \$SOLR_PORT -Dsolr.log.dir=\$temp_dir -q --no-prompt &> \$temp_dir/solr.log &
             timeout 20 bash -c 'until curl -s http://localhost:'"\$SOLR_PORT"'/solr/admin/ping;do sleep 2; done' ||{
                 echo "Error: Solr did not start within 60 seconds." >&2
                 cat \$temp_dir/solr.log >&2
@@ -118,7 +118,7 @@ create_mongo_unit(){
 CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
 DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/monogodb}
 LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
-CONFIG_DIR=$PREFIX/share/$PKG_NAME/mongodb
+CONFIG_DIR=\${API_CONFIG_DIR:-$PREFIX/share/$PKG_NAME/monogodb}
 set  -o nounset -o pipefail -o errexit
 mkdir -p \$LOG_DIR \$DATA_DIR \$CONFIG_DIR
 API_MONGO_HOST=\${API_MONGO_HOST:-localhost:27017}
