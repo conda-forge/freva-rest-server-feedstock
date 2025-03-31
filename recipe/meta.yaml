@@ -49,7 +49,6 @@ requirements:
     - typing_extensions
     - uvicorn
     - zarr <3
-    - opensearch
 
 test:
   imports:
