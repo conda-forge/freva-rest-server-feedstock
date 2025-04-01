@@ -319,11 +319,9 @@ API_REDIS_SSL_KEYFILE=
 API_MONGO_HOST=localhost:27017
 API_MONGO_USER=
 API_MONGO_PASSWORD=
-API_MONGO_DB=search_stats
+API_MONGO_DB=search_stats' > $PREFIX/share/$PKG_NAME/config.ini
 chmod 600 $PREFIX/share/$PKG_NAME/config.ini
 }
-
-
 install_server
 setup_config
 exit_func 0
