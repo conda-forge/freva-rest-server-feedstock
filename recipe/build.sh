@@ -186,45 +186,6 @@ chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-mongo
 }
 
 
-create_opensearch_unit() {
-    # Create the OpenSearch initialization script
-    cat << EOF > $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
-#!/usr/bin/env bash
-CONDA_PREFIX=\$(readlink -f \${CONDA_PREFIX:-\$(dirname \$0)../../../)})
-DATA_DIR=\${API_DATA_DIR:-$PREFIX/var/$PKG_NAME/opensearch}
-LOG_DIR=\${API_LOG_DIR:-$PREFIX/var/log/$PKG_NAME}
-export OPENSEARCH_HOME=$PREFIX/libexec/opensearch
-export JAVA_HOME=$PREFIX
-set -o nounset -o pipefail -o errexit
-
-# Set OpenSearch environment variables
-export OPENSEARCH_PATH_CONF=\$OPENSEARCH_HOME/config
-PATH="$PREFIX/libexec/opensearch/bin:\$PATH"
-
-# Install plugin security to be able to disable SSL
-if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-security" ];then
-    mkdir -p \$OPENSEARCH_HOME/{plugins,config}
-    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-security/2.19.1.0/opensearch-security-2.19.1.0.zip
-fi
-# Installing OpenSearch job scheduler plugin (dependency of ISM)
-if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-job-scheduler" ];then
-    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-job-scheduler/2.19.1.0/opensearch-job-scheduler-2.19.1.0.zip
-fi
-# Install OpenSearch Index Management plugin
-if [ ! -d "\$OPENSEARCH_HOME/plugins/opensearch-index-management" ];then
-    opensearch-plugin install --batch https://repo1.maven.org/maven2/org/opensearch/plugin/opensearch-index-management/2.19.1.0/opensearch-index-management-2.19.1.0.zip
-fi
-
-mkdir -p \$DATA_DIR \$LOG_DIR
-cp $PREFIX/share/$PKG_NAME/opensearch/opensearch.yml \$OPENSEARCH_PATH_CONF
-echo -e '\n## Persistent data and log location' >> \$OPENSEARCH_PATH_CONF/opensearch.yml
-echo path.data: \$DATA_DIR >> \$OPENSEARCH_PATH_CONF/opensearch.yml
-echo path.logs: \$LOG_DIR/opensearch.log >> \$OPENSEARCH_PATH_CONF/opensearch.yml
-EOF
-    chmod +x $PREFIX/libexec/$PKG_NAME/scripts/init-opensearch
-}
-
-
 install_server(){
     # Install the rest server
     #
@@ -302,14 +263,6 @@ EOF
     -e "s|{{EXEC_START}}|$PREFIX/bin/redis-server /tmp/redis.conf|g")
     echo "$redis_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/redis.service" > /dev/null
 
-    #OPENSEARCH - STACAPI
-    opensearch_unit=$(cat template.j2|sed \
-    -e "s|{{DESCRIPTION}}|OpenSearch server|g" \
-    -e "s|{{AFTER}}|network.target|g" \
-    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-opensearch |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch |g")
-    echo "$opensearch_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/opensearch.service" > /dev/null
-
 }
 
 create_redis_unit(){
@@ -336,15 +289,13 @@ setup_config() {
     mkdir -p $PREFIX/libexec/$PKG_NAME/scripts
     mkdir -p $PREFIX/share/$PKG_NAME/{mysqld,mongodb}
     mkdir -p $PREFIX/var/log/$PKG_NAME
-    mkdir -p $PREFIX/var/$PKG_NAME/{mongodb,mysqld,solr,redis,opensearch}
+    mkdir -p $PREFIX/var/$PKG_NAME/{mongodb,mysqld,solr,redis}
     cp -r freva-service-config/solr $PREFIX/share/$PKG_NAME/
     cp -r freva-service-config/mysql/*.{sql,sh} $PREFIX/share/$PKG_NAME/mysqld/
-    cp -r freva-service-config/opensearch $PREFIX/share/$PKG_NAME/
     create_mysql_unit
     create_solr_unit
     create_mongo_unit
     create_redis_unit
-    create_opensearch_unit
     create_systemd_units
     echo -e '# Mysql Server Settings.\n#
 MYSQL_USER=
@@ -369,10 +320,6 @@ API_MONGO_HOST=localhost:27017
 API_MONGO_USER=
 API_MONGO_PASSWORD=
 API_MONGO_DB=search_stats
-\n#Opensearch settings' > $PREFIX/share/$PKG_NAME/config.ini
-echo "JAVA_HOME=$PREFIX" >> $PREFIX/share/$PKG_NAME/config.ini
-echo "OPENSEARCH_HOME=$PREFIX/libexec/opensearch" >> $PREFIX/share/$PKG_NAME/config.ini
-echo "OPENSEARCH_PATH_CONF=$PREFIX/libexec/opensearch/config" >> $PREFIX/share/$PKG_NAME/config.ini
 chmod 600 $PREFIX/share/$PKG_NAME/config.ini
 }
 

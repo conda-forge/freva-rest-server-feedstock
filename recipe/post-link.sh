@@ -74,14 +74,6 @@ EOF
     -e "s|{{EXEC_START}}|$PREFIX/bin/redis-server /tmp/redis.conf|g")
     echo "$redis_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/redis.service" > /dev/null
 
-    #OPENSEARCH - STACAPI
-    opensearch_unit=$(cat template.j2|sed \
-    -e "s|{{DESCRIPTION}}|OpenSearch server|g" \
-    -e "s|{{AFTER}}|network.target|g" \
-    -e "s|{{EXEC_START_PRE}}|$PREFIX/libexec/$PKG_NAME/scripts/init-opensearch |g" \
-    -e "s|{{EXEC_START}}|$PREFIX/bin/opensearch |g")
-    echo "$opensearch_unit" | tee "$PREFIX/share/$PKG_NAME/systemd/opensearch.service" > /dev/null
-
 rm -r $TEMP_DIR
 }
 
