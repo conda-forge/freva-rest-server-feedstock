@@ -78,7 +78,7 @@ Installation
 
    3. Enable and start the services as follows:
 
-     `cp $CONDA_PREFIX/share/systemd/solr.service /etc/systemd/system`
+     `cp $CONDA_PREFIX/share/freva-rest-server/systemd/solr.service /etc/systemd/system`
      `sudo systemctl daemon-reload`
      `sudo systemctl enable solr`
      `sudo systemctl start solr`
@@ -256,4 +256,5 @@ Feedstock Maintainers
 =====================
 
 * [@antarcticrainforest](https://github.com/antarcticrainforest/)
+* [@mo-dkrz](https://github.com/mo-dkrz/)
 
