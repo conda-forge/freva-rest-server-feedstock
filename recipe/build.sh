@@ -108,6 +108,6 @@ EOI
 
 }
 
-#install_server
+install_server
 setup_config
 exit_func 0
