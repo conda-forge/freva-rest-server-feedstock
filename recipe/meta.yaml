@@ -10,7 +10,7 @@ source:
     sha256: 85794f28e5382bf109a82ac0c5cba56ecb990a0c2ee784c995ad7fb31c366f9d
 
 build:
-  number: 0
+  number: 1
   noarch: python
 
 
@@ -28,6 +28,8 @@ requirements:
     - email-validator
     - fastapi
     - fastapi-third-party-auth
+    - httpx
+    - h5netcdf
     - motor >=3.6
     - pyjwt
     - pymongo >=4.9
@@ -49,6 +51,7 @@ test:
     - freva_rest
   commands:
     - freva-rest-server --help
+    - python -m pip check
   requires:
     - python {{ python_min }}
     - pip

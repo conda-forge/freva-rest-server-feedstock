@@ -25,7 +25,7 @@ install_server(){
 setup_config() {
     # Setup additional configuration
     cd $TEMP_DIR
-    git clone --recursive -b dev-ops-crazyness https://github.com/FREVA-CLINT/freva-service-config.git
+    git clone --recursive https://github.com/FREVA-CLINT/freva-service-config.git
     mkdir -p $PREFIX/etc/profile.d $PREFIX/libexec/$PKG_NAME
     echo "#!/usr/bin/env bash" > $PREFIX/etc/profile.d/freva-rest-server.sh
     echo "" >> $PREFIX/etc/profile.d/$PKG_NAME.sh
