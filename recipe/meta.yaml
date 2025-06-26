@@ -6,11 +6,11 @@ package:
   version: {{ version }}
 
 source:
-  - url: https://github.com/FREVA-CLINT/freva-nextgen/archive/refs/tags/v{{ version }}.tar.gz
-    sha256: 141e26eddfc1c23951882d6c3be3c1ca9c0c673da3f6a85071fe0123549f936e
+  - url: https://github.com/freva-org/freva-nextgen/archive/refs/tags/v{{ version }}.tar.gz
+    sha256: dc499263a98590daafc0751813e50275b30ca4dc06bbeabff0f269c910cdeebe
 
 build:
-  number: 0
+  number: 1
   noarch: python
 
 
