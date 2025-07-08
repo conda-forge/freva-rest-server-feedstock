@@ -62,43 +62,6 @@ Prerequisites
    - Conda installed to manage dependencies.
    - Access to required systemd services like Apache Solr and MongoDB.
 
-Installation
-~~~~~~~~~~~~
-
-  1. Install Freva using the Conda package manager:
-
-     `conda create -n freva-nextgen -c conda-forge freva-nextgen`
-     `conda activate freva-nextgen`
-
-
-  2. The system requires various background services. These can be found in:
-
-    `$CONDA_PREFIX/share/systemd/<SERVICE>.service`
-
-
-   3. Enable and start the services as follows:
-
-     `cp $CONDA_PREFIX/share/freva-rest-server/systemd/solr.service /etc/systemd/system`
-     `sudo systemctl daemon-reload`
-     `sudo systemctl enable solr`
-     `sudo systemctl start solr`
-
-
-     Modify the configuration file
-     (`$CONDA_PREFIX/share/freva-rest-server/config.ini`) to adjust the
-     restAPI and service settings.
-
-     If you prefer to use systemd services at the **user level**
-     (e.g., in `~/.local/share/systemd/user/`),
-     ensure that **systemd lingering** is enabled for the user.
-
-   4. You can enable lingering with the following command:
-
-    `sudo loginctl enable-linger <USER-NAME>`
-
-   This allows user-level services to continue running after the user logs
-   out.
-
 
 Running the Freva REST Server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
