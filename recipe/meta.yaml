@@ -7,10 +7,10 @@ package:
 
 source:
   - url: https://github.com/freva-org/freva-nextgen/archive/refs/tags/v{{ version }}.tar.gz
-    sha256: 8c69c97f63458cfe0d86983fd7c6a1ea849c81e12d60b690d3d5070d5e988a62
+    sha256: 351993eb2336d1b3623d7324f92d7ae3c9829429c40cf4ca58dc9f86fb96acb4
 
 build:
-  number: 0
+  number: 1
   noarch: python
 
 
