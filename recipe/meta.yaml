@@ -27,7 +27,7 @@ requirements:
     - cloudpickle
     - email-validator
     - fastapi
-    - fastapi-third-party-auth
+    - py-oidc-auth-fastapi
     - httpx
     - h5netcdf
     - motor >=3.6
