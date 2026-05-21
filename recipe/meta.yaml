@@ -46,6 +46,7 @@ requirements:
     - uvicorn
     - xarray
     - zarr
+    - cachetools
 
 test:
   imports:
