@@ -1,5 +1,5 @@
 {% set name = "freva-rest-server" %}
-{% set version = "2606.0.1" %}
+{% set version = "2607.0.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   - url: https://github.com/freva-org/freva-nextgen/archive/refs/tags/v{{ version }}.tar.gz
-    sha256: 095cd17ea120e284b1f527356619fce9b0d93f90919fc9aeb4970b57ac78d538
+    sha256: eb286042550c4f7eff8c03582fbcbb8b942b2ff14a9306ad588f023e5a88df55
 
 build:
   number: 0
