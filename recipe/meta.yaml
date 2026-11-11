@@ -47,6 +47,8 @@ requirements:
     - xarray
     - zarr
     - cachetools
+    - greenlet
+    - jmespath
 
 test:
   imports:
